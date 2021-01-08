@@ -97,5 +97,72 @@ void Chip8::OP_5XY0(){
 }
 
 void Chip8::OP_6XKK(){
-    
+    registers[(opcode & 0x0F00) >> 8] = (opcode & 0x00FF);
+}
+
+void Chip8::OP_7XKK(){
+    registers[(opcode & 0x0F00) >> 8] += (opcode & 0x00FF);
+}
+
+void Chip8::OP_8XY0(){
+    registers[(opcode & 0x0F00) >> 8] = (opcode & 0x00F0) >> 4;
+}
+
+void Chip8::OP_8XY1(){
+    registers[(opcode & 0x0F00) >> 8] |= (opcode & 0x00F0) >> 4;
+}
+
+void Chip8::OP_8XY2(){
+    registers[(opcode & 0x0F00) >> 8] &= (opcode & 0x00F0) >> 4;
+}
+
+void Chip8::OP_8XY3(){
+    registers[(opcode & 0x0F00) >> 8] ^= (opcode & 0x00F0) >> 4;
+}
+
+void Chip8::OP_8XY4(){
+
+    uint16_t sum = registers[(opcode & 0x0F00) >> 8] + registers[(opcode & 0x00F0) >> 4];
+
+    if(sum > 255)
+        registers[0xF] = 1;
+    else
+        registers[0xF] = 0;
+
+    registers[(opcode & 0x0F00) >> 8] = sum & 0xFF;
+}
+
+void Chip8::OP_8XY5(){
+
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t Vy = (opcode & 0x00F0) >> 4;
+
+    if(registers[Vx] > registers[Vy])
+        registers[0xF] = 1;
+    else
+        registers[0xF] = 0;
+
+    registers[Vx] -= registers[Vy];
+}
+
+void Chip8::OP_8XY6(){
+
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+
+    registers[0xF] = registers[Vx] & 0x1;
+
+    registers[Vx] >>= 1;
+}
+
+void Chip8::OP_8XY7(){
+
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t Vy = (opcode & 0x00F0) >> 4;
+
+    if(registers[Vy] > registers[Vx])
+        registers[0xF] = 1;
+    else
+        registers[0xF] = 0;
+
+    registers[Vx] = registers[Vy] - registers[Vx];
 }

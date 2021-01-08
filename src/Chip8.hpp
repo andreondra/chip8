@@ -49,6 +49,15 @@ class Chip8{
         void Chip8::OP_4XKK(); //SNE Vx, byte
         void Chip8::OP_5XY0(); //SE Vx, Vy
         void Chip8::OP_6XKK(); //LD Vx, byte
+        void Chip8::OP_7XKK(); //ADD Vx, byte
+        void Chip8::OP_8XY0(); //LD Vx, Vy
+        void Chip8::OP_8XY1(); //OR Vx, Vy
+        void Chip8::OP_8XY2(); //AND Vx, Vy
+        void Chip8::OP_8XY3(); //XOR Vx, Vy
+        void Chip8::OP_8XY4(); //ADD Vx, Vy
+        void Chip8::OP_8XY5(); //SUB Vx, Vy
+        void Chip8::OP_8XY6(); //SHR Vx
+        void Chip8::OP_8XY7(); //SUBN Vx, Vy
 
     public:
         Chip8();
