@@ -3,8 +3,8 @@ My version of the CHIP-8 interpreter. I learnt a lot of useful information at [A
 
 The project is written in C++ and uses the SDL2 library to handle events and display output. 
 
-## Disclaimer
+## ⚠ Disclaimer
 This is only a learning project not intended for any production use.
 
-## License
+## ⚖ License
 MIT License
