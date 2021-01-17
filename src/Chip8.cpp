@@ -166,3 +166,164 @@ void Chip8::OP_8XY7(){
 
     registers[Vx] = registers[Vy] - registers[Vx];
 }
+
+void Chip8::OP_8XYE(){
+
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+
+    if(registers[Vx] & 0x80)
+        registers[0xF] = 1;
+    else
+        registers[0xF] = 0;
+
+    registers[Vx] <<= 1;
+}
+
+void Chip8::OP_9XY0(){
+
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t Vy = (opcode & 0x00F0) >> 4;
+
+    if(registers[Vx] != registers[Vy])
+        pc += 2;    
+}
+
+void Chip8::OP_ANNN(){
+
+    index = (opcode & 0x0FFF);
+}
+
+void Chip8::OP_BNNN(){
+
+    pc = registers[0] + (opcode & 0x0FFF);
+}
+
+void Chip8::OP_CXKK(){
+
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t kk = (opcode & 0x00FF);
+
+    registers[Vx] = randByte(randGenerator) & kk;
+}
+
+void Chip8::OP_DXYN(){
+
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t Vy = (opcode & 0x00F0) >> 4;
+    uint8_t h = (opcode & 0x000F);
+
+    uint8_t x = registers[Vx] % SCREEN_WIDTH;
+    uint8_t y = registers[Vy] % SCREEN_HEIGHT;
+
+    registers[0xF] = 0;
+
+    for(uint8_t i = 0; i < h; i++){
+
+        uint8_t sprite = memory[index + i];
+
+        for(uint8_t j = 0; j < 8; j++){
+
+            uint8_t currentPixel = sprite & (0x80 >> j);
+            uint32_t *screenPixel = &display[(i + y) * SCREEN_WIDTH + (x + j)];
+
+            if(currentPixel){
+
+                if(*screenPixel == 0xFFFFFFFF)
+                    registers[0xF] = 1;
+
+                *screenPixel ^= 0xFFFFFFFF;
+            }
+        }
+    }
+}
+
+void Chip8::OP_EX9E(){
+
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t key = registers[Vx];
+
+    if(keypad[key])
+        pc += 2;
+}
+
+void Chip8::OP_EXA1(){
+
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+    uint8_t key = registers[Vx];
+
+    if(!keypad[key])
+        pc += 2;
+}
+
+void Chip8::OP_FX07(){
+
+    registers[(opcode & 0x0F00) >> 8] = delayTimer;
+}
+
+void Chip8::OP_FX0A(){
+
+    bool pressed = 0;
+
+    for(int i = 0; i < 16; i++){
+
+        if(keypad[i]){
+            registers[(opcode & 0x0F00) >> 8] = i;
+            pressed = 1;
+            break;
+        }
+    }
+
+    if(!pressed)
+        pc -= 2;
+}
+
+void Chip8::OP_FX15(){
+
+    delayTimer = registers[(opcode & 0x0F00) >> 8];
+}
+
+void Chip8::OP_FX18(){
+
+    soundTimer = registers[(opcode & 0x0F00) >> 8];
+}
+
+void Chip8::OP_FX1E(){
+
+    index += registers[(opcode & 0x0F00) >> 8];
+}
+
+void Chip8::OP_FX29(){
+
+    uint8_t digit = registers[(opcode & 0x0F00) >> 8];
+
+    index = ADR_FONT + (digit * 5);
+}
+
+void Chip8::OP_FX33(){
+
+    uint8_t number = registers[(opcode & 0x0F00) >> 8];
+
+    memory[index + 2] = number % 10;
+    number /= 10;
+
+    memory[index + 1] = number % 10;
+    number /= 10;
+
+    memory[index] = number % 10;
+}
+
+void Chip8::OP_FX55(){
+
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+
+    for(uint8_t i = 0; i <= Vx; i++)
+        memory[index + i] = registers[i];
+}
+
+void Chip8::OP_FX65(){
+
+    uint8_t Vx = (opcode & 0x0F00) >> 8;
+
+    for(uint8_t i = 0; i <= Vx; i++)
+        registers[i] = memory[index + i];
+}

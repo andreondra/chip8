@@ -15,6 +15,8 @@ class Chip8{
         static const uint8_t ADR_FONT = 0x50;
         static const uint8_t SIZE_FONT = 80;
         static const uint16_t SIZE_SCREEN = 2048;
+        static const uint8_t SCREEN_WIDTH = 64;
+        static const uint8_t SCREEN_HEIGHT = 32;
         static const uint8_t font[SIZE_FONT];
 
         typedef enum returnStatus {
@@ -58,6 +60,23 @@ class Chip8{
         void Chip8::OP_8XY5(); //SUB Vx, Vy
         void Chip8::OP_8XY6(); //SHR Vx
         void Chip8::OP_8XY7(); //SUBN Vx, Vy
+        void Chip8::OP_8XYE(); //SHL Vx {, Vy}
+        void Chip8::OP_9XY0(); //SNE Vx, Vy
+        void Chip8::OP_ANNN(); //LD I, addr
+        void Chip8::OP_BNNN(); //JP V0, addr
+        void Chip8::OP_CXKK(); //RND Vx, byte
+        void Chip8::OP_DXYN(); //DRW Vx, Vy, nibble
+        void Chip8::OP_EX9E(); //SKP Vx
+        void Chip8::OP_EXA1(); //SKNP Vx
+        void Chip8::OP_FX07(); //LD Vx, DT
+        void Chip8::OP_FX0A(); //LD Vx, K
+        void Chip8::OP_FX15(); //LD DT, Vx
+        void Chip8::OP_FX18(); //LD ST, Vx
+        void Chip8::OP_FX1E(); //ADD I, Vx
+        void Chip8::OP_FX29(); //LD F, Vx
+        void Chip8::OP_FX33(); //LD B, Vx
+        void Chip8::OP_FX55(); //LD [I], Vx
+        void Chip8::OP_FX65(); //LD Vx, [I]
 
     public:
         Chip8();
