@@ -33,8 +33,6 @@ class Chip8{
         uint8_t stackPointer;
         uint8_t delayTimer;
         uint8_t soundTimer;
-        uint8_t keypad[16];
-        uint32_t display[SIZE_SCREEN];
         uint16_t opcode;
 
         std::default_random_engine randGenerator;
@@ -80,6 +78,9 @@ class Chip8{
 
     public:
         Chip8();
+        void Chip8::Cycle();
+        uint8_t keypad[16];
+        uint32_t display[SIZE_SCREEN];
 };
 
 #endif

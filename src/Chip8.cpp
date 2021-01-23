@@ -22,10 +22,75 @@ const uint8_t Chip8::font[SIZE_FONT] = {
             0xF0, 0x80, 0xF0, 0x80, 0x80  // F
         };
 
-Chip8::Chip8() : randGenerator(std::chrono::system_clock::now().time_since_epoch().count()){
+Chip8::Chip8() 
+    : randGenerator(std::chrono::system_clock::now().time_since_epoch().count()){
 
     memcpy(memory, font, sizeof(uint8_t) * SIZE_FONT);
     randByte = std::uniform_int_distribution<uint8_t>(0, 255);
+}
+
+void Chip8::Cycle(){
+
+    uint16_t hashed;
+
+    opcode = (memory[pc] << 8) | memory[pc + 1];  
+    pc += 2;
+    
+    switch(opcode & 0xF000){
+
+        case 0x8000:
+        case 0x0000:
+            hashed = opcode & 0xF00F;
+            break;
+        
+        case 0xE000:
+        case 0xF000:
+            hashed = opcode & 0xF0FF;
+            break;
+
+        default:
+            hashed = opcode & 0xF000;
+            break;
+    }
+
+    switch(hashed){
+
+        case 0x1000: OP_1NNN(); break;
+        case 0x2000: OP_2NNN(); break;
+        case 0x3000: OP_3XKK(); break;
+        case 0x4000: OP_4XKK(); break;
+        case 0x5000: OP_5XY0(); break;
+        case 0x6000: OP_6XKK(); break;
+        case 0x7000: OP_7XKK(); break;
+        case 0x8000: OP_8XY0(); break;
+        case 0x8001: OP_8XY1(); break;
+        case 0x8002: OP_8XY2(); break;
+        case 0x8003: OP_8XY3(); break;
+        case 0x8004: OP_8XY4(); break;
+        case 0x8005: OP_8XY5(); break;
+        case 0x8006: OP_8XY6(); break;
+        case 0x8007: OP_8XY7(); break;
+        case 0x800E: OP_8XYE(); break;
+        case 0x0000: OP_00E0(); break;
+        case 0x000E: OP_00EE(); break;
+        case 0xE0A1: OP_EXA1(); break;
+        case 0xE09E: OP_EX9E(); break;
+        case 0xF007: OP_FX07(); break;
+        case 0xF00A: OP_FX0A(); break;
+        case 0xF015: OP_FX15(); break;
+        case 0xF018: OP_FX18(); break;
+        case 0xF01E: OP_FX1E(); break;
+        case 0xF029: OP_FX29(); break;
+        case 0xF033: OP_FX33(); break;
+        case 0xF055: OP_FX55(); break;
+        case 0xF065: OP_FX65(); break;
+    }
+
+    if(delayTimer > 0)
+        delayTimer--;
+
+    if(soundTimer > 0)
+        soundTimer--;
 }
 
 Chip8::returnStatus_t Chip8::loadROM(const char *filename){
