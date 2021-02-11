@@ -19,7 +19,7 @@ class Platform{
         Platform(const void *screenBuffer, uint8_t *keypad, const char *title, int scale);
         ~Platform();
         void Update();
-        void GetInput();
+        bool GetInput();
 };
 
 #endif

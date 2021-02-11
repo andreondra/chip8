@@ -25,8 +25,10 @@ const uint8_t Chip8::font[SIZE_FONT] = {
 Chip8::Chip8() 
     : randGenerator(std::chrono::system_clock::now().time_since_epoch().count()){
 
-    memcpy(memory, font, sizeof(uint8_t) * SIZE_FONT);
+    memcpy(memory + ADR_FONT, font, sizeof(uint8_t) * SIZE_FONT);
     randByte = std::uniform_int_distribution<uint8_t>(0, 255);
+
+    pc = ADR_START;
 }
 
 void Chip8::Cycle(){
@@ -34,6 +36,7 @@ void Chip8::Cycle(){
     uint16_t hashed;
 
     opcode = (memory[pc] << 8) | memory[pc + 1];  
+
     pc += 2;
     
     switch(opcode & 0xF000){
@@ -62,6 +65,12 @@ void Chip8::Cycle(){
         case 0x5000: OP_5XY0(); break;
         case 0x6000: OP_6XKK(); break;
         case 0x7000: OP_7XKK(); break;
+        case 0x9000: OP_9XY0(); break;
+        case 0xA000: OP_ANNN(); break;
+        case 0xB000: OP_BNNN(); break;
+        case 0xC000: OP_CXKK(); break;
+        case 0xD000: OP_DXYN(); break;
+
         case 0x8000: OP_8XY0(); break;
         case 0x8001: OP_8XY1(); break;
         case 0x8002: OP_8XY2(); break;
@@ -71,8 +80,10 @@ void Chip8::Cycle(){
         case 0x8006: OP_8XY6(); break;
         case 0x8007: OP_8XY7(); break;
         case 0x800E: OP_8XYE(); break;
+
         case 0x0000: OP_00E0(); break;
         case 0x000E: OP_00EE(); break;
+
         case 0xE0A1: OP_EXA1(); break;
         case 0xE09E: OP_EX9E(); break;
         case 0xF007: OP_FX07(); break;
@@ -84,6 +95,9 @@ void Chip8::Cycle(){
         case 0xF033: OP_FX33(); break;
         case 0xF055: OP_FX55(); break;
         case 0xF065: OP_FX65(); break;
+
+        default:
+            break;
     }
 
     if(delayTimer > 0)
@@ -97,7 +111,6 @@ Chip8::returnStatus_t Chip8::loadROM(const char *filename){
 
     FILE *rom;
     size_t readStatus;
-    size_t dataSize;
 
     if(NULL == (rom = fopen(filename, "rb"))){
         return RS_ROM_IOERROR;
@@ -105,18 +118,18 @@ Chip8::returnStatus_t Chip8::loadROM(const char *filename){
 
     readStatus = fread(memory + ADR_START, sizeof(uint8_t), 4096, rom);
 
-    if(readStatus != 4096){
-        return RS_ROM_IOERROR;
+    if(readStatus > 4096){
+        return RS_ROM_TOOBIG;
     }
 
     fclose(rom);
     rom = NULL;
-    
+
     return RS_OK;
 }
 
 void Chip8::OP_00E0(){
-    memset(display, 0, SIZE_SCREEN);
+    memset(display, 0, SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(display[0]));
 }
 
 void Chip8::OP_00EE(){
@@ -170,19 +183,19 @@ void Chip8::OP_7XKK(){
 }
 
 void Chip8::OP_8XY0(){
-    registers[(opcode & 0x0F00) >> 8] = (opcode & 0x00F0) >> 4;
+    registers[(opcode & 0x0F00) >> 8] = registers[(opcode & 0x00F0) >> 4];
 }
 
 void Chip8::OP_8XY1(){
-    registers[(opcode & 0x0F00) >> 8] |= (opcode & 0x00F0) >> 4;
+    registers[(opcode & 0x0F00) >> 8] |= registers[(opcode & 0x00F0) >> 4];
 }
 
 void Chip8::OP_8XY2(){
-    registers[(opcode & 0x0F00) >> 8] &= (opcode & 0x00F0) >> 4;
+    registers[(opcode & 0x0F00) >> 8] &= registers[(opcode & 0x00F0) >> 4];
 }
 
 void Chip8::OP_8XY3(){
-    registers[(opcode & 0x0F00) >> 8] ^= (opcode & 0x00F0) >> 4;
+    registers[(opcode & 0x0F00) >> 8] ^= registers[(opcode & 0x00F0) >> 4];
 }
 
 void Chip8::OP_8XY4(){
@@ -283,7 +296,7 @@ void Chip8::OP_DXYN(){
     registers[0xF] = 0;
 
     for(uint8_t i = 0; i < h; i++){
-
+        
         uint8_t sprite = memory[index + i];
 
         for(uint8_t j = 0; j < 8; j++){
